@@ -2,6 +2,8 @@
 
 A Python-based trading bot that receives trade decisions from make.com and executes them on Bybit. The bot supports limit orders, stop losses, and multiple take profit levels with risk management.
 
+<!-- Updated: Fixed stop-loss order type for derivatives trading -->
+
 ## Features
 
 - 🔄 **Webhook Integration**: Receives trade decisions from make.com via HTTP webhooks
