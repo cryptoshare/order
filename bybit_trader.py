@@ -131,7 +131,7 @@ class BybitTrader:
     
     def place_limit_order(self, symbol: str, side: str, qty: float, price: float, 
                          stop_loss: float, take_profits: list, timeout_min: int = 120) -> Dict[str, Any]:
-        """Place a limit order with stop loss and take profits using conditional orders"""
+        """Place a limit order with stop loss and take profits using TP/SL parameters"""
         try:
             # Convert symbol format (HYPE/USDT -> HYPEUSDT)
             bybit_symbol = symbol.replace('/', '')
@@ -139,16 +139,32 @@ class BybitTrader:
             # Convert side to derivatives format
             derivatives_side = "Buy" if side.lower() == "long" else "Sell"
             
-            # Place the main limit order
-            order_response = self.session.place_order(
-                category="linear",
-                symbol=bybit_symbol,
-                side=derivatives_side,
-                orderType="Limit",
-                qty=str(qty),
-                price=str(price),
-                timeInForce="GTC"
-            )
+            # Prepare TP/SL parameters
+            tp_sl_params = {}
+            
+            # Add stop loss
+            if stop_loss:
+                tp_sl_params['stopLoss'] = str(stop_loss)
+            
+            # Add take profits (use the first one for simplicity)
+            if take_profits and len(take_profits) > 0:
+                tp_sl_params['takeProfit'] = str(take_profits[0]['price'])
+            
+            # Place the main limit order with TP/SL
+            order_params = {
+                'category': 'linear',
+                'symbol': bybit_symbol,
+                'side': derivatives_side,
+                'orderType': 'Limit',
+                'qty': str(qty),
+                'price': str(price),
+                'timeInForce': 'GTC'
+            }
+            
+            # Add TP/SL parameters if available
+            order_params.update(tp_sl_params)
+            
+            order_response = self.session.place_order(**order_params)
             
             if order_response['retCode'] != 0:
                 logger.error(f"Failed to place limit order: {order_response}")
@@ -157,54 +173,16 @@ class BybitTrader:
             order_id = order_response['result']['orderId']
             logger.info(f"Placed {side} limit order: {order_id} for {qty} {symbol} at {price}")
             
-            # Wait a moment for the order to be processed
-            import time
-            time.sleep(1)
-            
-            # Place conditional stop loss order
-            sl_side = "Sell" if side.lower() == "long" else "Buy"
-            sl_response = self.session.place_order(
-                category="linear",
-                symbol=bybit_symbol,
-                side=sl_side,
-                orderType="Stop",
-                qty=str(qty),
-                stopPrice=str(stop_loss),
-                timeInForce="GTC",
-                triggerBy="LastPrice"
-            )
-            
-            if sl_response['retCode'] == 0:
-                logger.info(f"Placed stop loss order: {sl_response['result']['orderId']} at {stop_loss}")
-            else:
-                logger.error(f"Failed to place stop loss: {sl_response}")
-            
-            # Place conditional take profit orders
-            tp_side = "Sell" if side.lower() == "long" else "Buy"
-            tp_responses = []
-            for tp in take_profits:
-                tp_qty = qty * (tp['size_pct'] / 100)
-                tp_response = self.session.place_order(
-                    category="linear",
-                    symbol=bybit_symbol,
-                    side=tp_side,
-                    orderType="Limit",
-                    qty=str(tp_qty),
-                    price=str(tp['price']),
-                    timeInForce="GTC"
-                )
-                
-                if tp_response['retCode'] == 0:
-                    logger.info(f"Placed take profit order: {tp_response['result']['orderId']} for {tp_qty} at {tp['price']}")
-                    tp_responses.append(tp_response)
-                else:
-                    logger.error(f"Failed to place take profit: {tp_response}")
+            if stop_loss:
+                logger.info(f"Stop loss set at: {stop_loss}")
+            if take_profits:
+                logger.info(f"Take profit set at: {take_profits[0]['price']}")
             
             return {
                 'success': True,
                 'main_order': order_response,
-                'stop_loss': sl_response,
-                'take_profits': tp_responses
+                'stop_loss': stop_loss,
+                'take_profits': take_profits
             }
             
         except Exception as e:
