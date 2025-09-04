@@ -8,33 +8,27 @@ This guide will help you deploy your Bybit trading bot to Railway for use with m
 - Railway account (free at [railway.app](https://railway.app))
 - Bybit API credentials with trading permissions
 
-## Step 1: Create GitHub Repository
+## Step 1: GitHub Repository
 
-1. Go to [GitHub](https://github.com) and create a new repository
-2. Name it `bybit-trader` (or any name you prefer)
-3. Make it **private** for security (recommended)
-4. Don't initialize with README (we already have one)
+✅ **Repository Ready**: Your code is already pushed to [https://github.com/cryptoshare/order.git](https://github.com/cryptoshare/order.git)
 
-## Step 2: Push Code to GitHub
+The repository contains:
+- Complete Bybit trading bot with derivatives support
+- Webhook server for make.com integration
+- Railway deployment configuration
+- Risk management and position sizing
+- Comprehensive documentation
 
-```bash
-# Add your GitHub repository as remote
-git remote add origin https://github.com/YOUR_USERNAME/bybit-trader.git
-
-# Push the code
-git push -u origin main
-```
-
-## Step 3: Deploy on Railway
+## Step 2: Deploy on Railway
 
 1. **Go to Railway**: Visit [railway.app](https://railway.app)
 2. **Sign up/Login**: Use your GitHub account
 3. **Create New Project**: Click "New Project"
 4. **Deploy from GitHub**: Select "Deploy from GitHub repo"
-5. **Select Repository**: Choose your `bybit-trader` repository
+5. **Select Repository**: Choose your `cryptoshare/order` repository
 6. **Deploy**: Railway will automatically detect it's a Python app
 
-## Step 4: Configure Environment Variables
+## Step 3: Configure Environment Variables
 
 In your Railway project dashboard:
 
@@ -50,13 +44,13 @@ WEBHOOK_HOST=0.0.0.0
 
 **Important**: Replace the API credentials with your actual values!
 
-## Step 5: Get Your Webhook URL
+## Step 4: Get Your Webhook URL
 
 1. In Railway dashboard, go to **Settings** tab
 2. Find your **Domain** (e.g., `https://bybit-trader-production.up.railway.app`)
 3. Copy this URL - this is your webhook endpoint
 
-## Step 6: Configure make.com
+## Step 5: Configure make.com
 
 1. In your make.com scenario, add a **Webhook** module
 2. Set the webhook URL to your Railway domain:
@@ -66,7 +60,7 @@ WEBHOOK_HOST=0.0.0.0
 3. Set method to **POST**
 4. Configure the webhook to send trade decisions in the expected format
 
-## Step 7: Test the Deployment
+## Step 6: Test the Deployment
 
 1. **Health Check**: Visit `https://your-app-name.railway.app/health`
 2. **Test Webhook**: Send a test trade decision from make.com
